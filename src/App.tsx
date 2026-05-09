@@ -20,14 +20,6 @@ import {
 import Spline from '@splinetool/react-spline';
 import { cn } from './lib/utils';
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      [elemName: string]: any;
-    }
-  }
-}
-
 // --- Components ---
 
 const SkillCategory = ({ title, skills }: { title: string, skills: string[] }) => (
@@ -61,7 +53,7 @@ const processSplineQueue = () => {
   }
 };
 
-const LazySpline = ({ scene, zoom = 1, delay = 2000 }: { scene: string; zoom?: number; delay?: number }) => {
+const LazySpline = ({ scene, zoom = 1, delay = 2000 }: { scene: string, zoom?: number, delay?: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 }); // Increased threshold
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -118,7 +110,7 @@ const LazySpline = ({ scene, zoom = 1, delay = 2000 }: { scene: string; zoom?: n
             <Spline 
               key={scene} 
               scene={scene} 
-              onLoad={(spline: any) => {
+              onLoad={(spline) => {
                 if (zoom !== 1) spline.setZoom(zoom);
                 if (isMounted.current) setLoaded(true);
                 globalSplineLoading = false;
@@ -145,18 +137,18 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
+class ErrorBoundary extends React.Component<any, any> {
+  state = { hasError: false };
 
-  constructor(props: ErrorBoundaryProps) {
+  constructor(props: any) {
     super(props);
   }
 
-  static getDerivedStateFromError(): ErrorBoundaryState {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error) {
+  componentDidCatch(error: any) {
     console.warn("Spline Runtime Error Caught:", error.message);
     if (this.props.onReset) this.props.onReset();
   }
@@ -177,16 +169,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 // --- Multi-Layer Cinematic Snowfall ---
 const Snowfall = () => {
-  const [layers, setLayers] = useState<Array<{ id: number; x: number; size: number; duration: number; delay: number; opacity: number; blur: string; swayX: number; pulse: number }>>([]);
+  const [layers, setLayers] = useState<any[]>([]);
 
   useEffect(() => {
-    const generateLayer = (
-      count: number,
-      speedMult: number,
-      opacityMult: number,
-      sizeMult: number,
-      wind: number
-    ): Array<{ id: number; x: number; size: number; duration: number; delay: number; opacity: number; blur: string; swayX: number; pulse: number }> => {
+    const generateLayer = (count: number, speedMult: number, opacityMult: number, sizeMult: number, wind: number) => {
       return Array.from({ length: count }).map((_, i) => ({
         id: Math.random(),
         x: Math.random() * 140 - 20,
@@ -201,15 +187,15 @@ const Snowfall = () => {
     };
 
     setLayers([
-      ...generateLayer(60, 0.4, 0.2, 0.3, 1),
-      ...generateLayer(40, 0.8, 0.5, 1.2, 1.8),
-      ...generateLayer(18, 1.6, 0.4, 10.0, 5),
+      ...generateLayer(60, 0.4, 0.2, 0.3, 1),   // Distant Background
+      ...generateLayer(40, 0.8, 0.5, 1.2, 1.8), // Midground
+      ...generateLayer(18, 1.6, 0.4, 10.0, 5),  // Cinematic Foreground (Big, Bold, Glow)
     ]);
   }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-20 overflow-hidden mix-blend-screen opacity-70">
-      {layers.map((flake: { id: number; x: number; size: number; duration: number; delay: number; opacity: number; blur: string; swayX: number; pulse: number }) => (
+      {layers.map((flake) => (
         <motion.div
           key={flake.id}
           className="absolute bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]"
@@ -240,11 +226,12 @@ const Snowfall = () => {
   );
 };
 
+// --- Preloader Component ---
 const Preloader = ({ onComplete }: { onComplete: () => void }) => {
-  const [counter, setCounter] = useState<number>(0);
-  const [logs, setLogs] = useState<Array<{ id: string; text: string }>>([]);
-
-  const logEntries: string[] = [
+  const [counter, setCounter] = useState(0);
+  const [logs, setLogs] = useState<{ id: string; text: string }[]>([]);
+  
+  const logEntries = [
     "Vesting_Encrypted_Protocol...",
     "Initializing_Kernel_Space...",
     "Bypassing_Shadow_DOM...",
@@ -260,10 +247,10 @@ const Preloader = ({ onComplete }: { onComplete: () => void }) => {
     let logIndex = 0;
     const logInterval = setInterval(() => {
       if (logIndex < logEntries.length) {
-        setLogs((prev) => {
-          const newEntry = {
-            id: `${logEntries[logIndex]}-${logIndex}-${Math.random().toString(36).substr(2, 9)}`,
-            text: logEntries[logIndex],
+        setLogs(prev => {
+          const newEntry = { 
+            id: `${logEntries[logIndex]}-${logIndex}-${Math.random().toString(36).substr(2, 9)}`, 
+            text: logEntries[logIndex] 
           };
           return [...prev.slice(-4), newEntry];
         });
@@ -291,12 +278,13 @@ const Preloader = ({ onComplete }: { onComplete: () => void }) => {
   }, [onComplete]);
 
   return (
-    <motion.div
+    <motion.div 
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
       className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.03),transparent)]" />
+      
       <div className="w-full max-w-7xl flex flex-col gap-8 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-12">
           <div className="font-mono text-[9px] text-zinc-500 uppercase tracking-[0.4em] leading-loose min-h-[100px]">
@@ -321,17 +309,24 @@ const Preloader = ({ onComplete }: { onComplete: () => void }) => {
         </div>
 
         <div className="w-full h-1 bg-zinc-900 overflow-hidden relative rounded-full">
-          <motion.div
+          <motion.div 
             className="h-full bg-white relative z-10 shadow-[0_0_20px_rgba(255,255,255,1)]"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: counter / 100 }}
             style={{ originX: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 35 }}
           />
-          <motion.div
+          {/* High-speed Cinematic Gleam */}
+          <motion.div 
             className="absolute top-0 left-0 h-full w-[20%] bg-gradient-to-r from-transparent via-white to-transparent z-20 opacity-80"
-            animate={{ x: ['-100%', '600%'] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            animate={{ 
+              x: ['-100%', '600%'] 
+            }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity, 
+              ease: "linear" 
+            }}
           />
         </div>
 
@@ -518,7 +513,17 @@ const ExperienceItem = ({ role, company, period, description, location, tags }: 
 // --- Main Page ---
 export default function App() {
   const [loading, setLoading] = useState(true);
+  const [showCopyToast, setShowCopyToast] = useState(false);
   const loadingRef = useRef(false);
+
+  const handleEmailClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const email = "zs657537@gmail.com";
+    navigator.clipboard.writeText(email);
+    setShowCopyToast(true);
+    setTimeout(() => setShowCopyToast(false), 3000);
+    window.location.href = `mailto:${email}`;
+  };
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   
@@ -535,6 +540,20 @@ export default function App() {
     <div className="relative bg-[#050505] text-[#fafafa] font-sans selection:bg-white selection:text-black min-h-screen overflow-x-hidden antialiased">
       <AnimatePresence mode="wait">
         {loading && <Preloader onComplete={handleLoadingComplete} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showCopyToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-6 py-3 rounded-full font-mono text-[10px] uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(255,255,255,0.2)] flex items-center gap-3"
+          >
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            Email copied to clipboard_
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <CustomCursor />
@@ -770,7 +789,11 @@ export default function App() {
              <motion.div 
                 whileHover={{ scale: 0.985 }}
                 className="md:col-span-4 bg-zinc-900/30 border border-zinc-800/50 p-16 rounded-[2.5rem] flex flex-col justify-between relative overflow-hidden group"
-             >
+             >  <img 
+                  src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1200" 
+                  alt="Tactics" 
+                  className="absolute inset-0 w-full h-full object-cover grayscale opacity-20 group-hover:opacity-40 transition-all duration-1000"
+                />
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Activity className="w-10 h-10 text-zinc-600" />
                 <div>
@@ -904,10 +927,11 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {[
-              { id: 1, title: "ACADEMIC_FRAME", url: "https://images.unsplash.com/photo-1541339907198-e087569fac21?auto=format&fit=crop&q=80&w=800", desc: "Structural Identity" },
-              { id: 2, title: "CYBER_POLO_NODE", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800", desc: "Logic & Presence" },
-              { id: 3, title: "BALCONY_PERSPECTIVE", url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=800", desc: "Summit Operations" },
-              { id: 4, title: "MOUNTAIN_TRANSIT", url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&q=80&w=800", desc: "Network Expansion" }
+              /* REPLACE_IMAGES: Fragments Gallery - Update urls to local paths e.g., "/photo1.jpg" */
+              { id: 1, title: "ACADEMIC_FRAME", url: "/Degree_img.jpg", desc: "Structural Identity" },
+              { id: 2, title: "TOP_VIEW", url: "/Sunlight2_img.jpg", desc: "Logic & Presence" },
+              { id: 3, title: "BALCONY_PERSPECTIVE", url: "/Ladakh_img.jpg", desc: "Summit Operations" },
+              { id: 4, title: "MOUNTAIN_TRANSIT", url: "/Mountain_img.jpg", desc: "Network Expansion" }
             ].map((img, i) => (
               <motion.div
                 key={img.id}
@@ -942,8 +966,9 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-32 items-center">
           <div className="relative group">
              <div className="overflow-hidden rounded-[2rem] aspect-[4/5] relative z-10 filter grayscale group-hover:grayscale-0 transition-all duration-1000 border border-zinc-900">
+                {/* REPLACE_IMAGE: Main Portrait - Update src to your local path e.g., "/me.jpg" */}
                 <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1000" 
+                  src="/Blackshirt_img.jpg" 
                   alt="Zubair Portrait" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
                 />
@@ -1007,12 +1032,12 @@ export default function App() {
             transition={{ duration: 1, type: "spring" }}
             className="mb-16"
           >
-            <a 
-              href="mailto:zs657537@gmail.com" 
+            <button 
+              onClick={handleEmailClick}
               className="w-24 h-24 bg-zinc-900/50 rounded-full flex items-center justify-center border border-zinc-800 text-zinc-50 backdrop-blur-xl group cursor-pointer hover:border-white transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]"
             >
                <Mail className="w-10 h-10 group-hover:scale-110 transition-transform" />
-            </a>
+            </button>
           </motion.div>
           
           <TiltText>
@@ -1027,12 +1052,12 @@ export default function App() {
                 <div className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest mb-6">Direct_Channel</div>
                 <h3 className="text-3xl font-black uppercase tracking-tighter mb-4 text-white group-hover:text-blue-400 transition-colors">Start a project?</h3>
                 <p className="text-zinc-500 mb-8 font-light italic">Currently accepting selected collaborations for 2024/25.</p>
-                <a 
-                  href="mailto:zs657537@gmail.com"
+                <button 
+                  onClick={handleEmailClick}
                   className="inline-flex items-center gap-3 text-white font-bold uppercase tracking-widest text-[10px] bg-white/5 hover:bg-white hover:text-black px-6 py-3 rounded-full transition-all"
                 >
                   zs657537@gmail.com <ChevronRight className="w-4 h-4" />
-                </a>
+                </button>
              </motion.div>
 
              <motion.div 
@@ -1045,25 +1070,25 @@ export default function App() {
                 <div className="flex gap-4">
                    <a href="https://linkedin.com/in/zubair-shaikh-6779a432a/" target="_blank" className="p-3 bg-black text-white rounded-xl hover:scale-110 transition-transform"><Linkedin className="w-5 h-5" /></a>
                    <a href="https://github.com/zubairshaikh379" target="_blank" className="p-3 bg-black text-white rounded-xl hover:scale-110 transition-transform"><Github className="w-5 h-5" /></a>
-                   <a 
-                     href="mailto:zs657537@gmail.com"
-                     className="p-3 bg-black text-white rounded-xl hover:scale-110 transition-transform"
+                   <button 
+                     onClick={handleEmailClick}
+                     className="p-3 bg-black text-white rounded-xl hover:scale-110 transition-transform cursor-pointer"
                    >
                      <Mail className="w-5 h-5" />
-                   </a>
+                   </button>
                 </div>
              </motion.div>
           </div>
           
           <div className="flex flex-wrap justify-center gap-16 md:gap-32 opacity-40 hover:opacity-100 transition-opacity">
-             <a 
-               href="mailto:zs657537@gmail.com"
-               className="text-xl font-black uppercase tracking-tighter hover:text-blue-500 transition-all hover:tracking-[0.1em] interactive leading-none"
+             <button 
+               onClick={handleEmailClick}
+               className="text-xl font-black uppercase tracking-tighter hover:text-blue-500 transition-all hover:tracking-[0.1em] interactive leading-none cursor-pointer"
              >
                 COMM_GMAIL_
-             </a>
-             <a href="https://linkedin.com/in/zubair-shaikh-6779a432a/" target="_blank" className="text-xl font-black uppercase tracking-tighter hover:text-blue-700 transition-all hover:tracking-[0.1em] interactive leading-none">AUTH_LINKEDIN_</a>
-             <a href="https://github.com/zubairshaikh379" target="_blank" className="text-xl font-black uppercase tracking-tighter hover:text-zinc-500 transition-all hover:tracking-[0.1em] interactive leading-none">ROOT_GITHUB_</a>
+             </button>
+             <a href="https://linkedin.com/in/zubair-shaikh-6779a432a/" target="_blank" rel="noopener noreferrer" className="text-xl font-black uppercase tracking-tighter hover:text-blue-700 transition-all hover:tracking-[0.1em] interactive leading-none">AUTH_LINKEDIN_</a>
+             <a href="https://github.com/zubairshaikh379" target="_blank" rel="noopener noreferrer" className="text-xl font-black uppercase tracking-tighter hover:text-zinc-500 transition-all hover:tracking-[0.1em] interactive leading-none">ROOT_GITHUB_</a>
           </div>
 
           <div className="mt-60 font-mono text-[9px] text-zinc-800 uppercase tracking-[0.8em]">
