@@ -653,7 +653,7 @@ export default function App() {
             <div className="w-px h-16 bg-zinc-900 hidden md:block" />
             <div className="text-center md:text-left group">
               <span className="block text-[9px] font-black text-zinc-700 uppercase tracking-widest mb-3 group-hover:text-zinc-500 transition-colors">Current_Academic</span>
-              <p className="text-xl font-light tracking-tight">BCA Finalist @ Mumbai University — 2025</p>
+              <p className="text-xl font-light tracking-tight">BCA Finalist @ IBSAR — 2025</p>
             </div>
           </motion.div>
         </div>
