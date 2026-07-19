@@ -1362,9 +1362,9 @@ export default function App() {
              <div className="overflow-hidden rounded-[2rem] aspect-[4/5] relative z-10 filter grayscale group-hover:grayscale-0 transition-all duration-1000 border border-zinc-900">
                 {/* REPLACE_IMAGE: Main Portrait - Update src to your local path e.g., "/me.jpg" */}
                 <img 
-                  src="/Blackshirt_img.jpg" 
+                  src= "/Blackshirt_img.jpg" 
                   alt="Zubair Portrait" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
+                  className="w-full h-auto object-cover"
                 />
              </div>
              <motion.div 
